@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>CNPA - Enquête • v0.3.15</title>
+<style>
+  /* ===== Theme (unifiée, moderne) ===== */
+  :root{
+    --bg:#0f1115; --panel:#161a22; --panel-2:#12151a; --b:#252a36;
+    --text:#e5e7eb; --muted:#9aa4b2; --blue:#4f7cff; --chip:#202635;
+    --surface:#1a1f2b; --accent:#7aa2ff; --danger:#ef4444; --ok:#22c55e;
+  }
+  [data-theme="light"]{
+    --bg:#f6f7fb; --panel:#ffffff; --panel-2:#ffffff; --b:#e5e7eb;
+    --text:#111827; --muted:#667085; --blue:#3b82f6; --chip:#eef2ff;
+    --surface:#f2f4f7; --accent:#1d4ed8; --danger:#dc2626; --ok:#16a34a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 0%,rgba(0,0,0,0.06) 80%,transparent);border-bottom:1px solid var(--b);backdrop-filter:blur(6px);z-index:20}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:36px;height:36px;border-radius:10px;background:#fff url('data:image/svg+xml;utf8,\
+  <svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22>\
+    <rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23ffffff%22/>\
+    <circle cx=%2220%22 cy=%2220%22 r=%2212%22 fill=%22%230051bd%22/>\
+    <circle cx=%2242%22 cy=%2228%22 r=%2212%22 fill=%22%23e11d48%22/>\
+  </svg>') center/90% no-repeat}
+  .title{font-weight:800;font-size:18px}
+  .subtitle{font-size:12px;color:var(--muted)}
+
+  .actions{gap:8px}
+  .btn{border:1px solid var(--b);background:var(--panel);color:var(--text);border-radius:12px;padding:8px 12px;font-size:13px;cursor:pointer}
+  .btn:hover{background:color-mix(in oklch, var(--panel), #000 6%)}
+  .btn.danger{border-color:color-mix(in oklch, var(--danger), black 30%);color:color-mix(in oklch, var(--danger), white 20%);background:color-mix(in oklch, var(--danger), var(--bg) 85%)}
+  .btn.primary{border-color:#2f54ff;background:var(--blue);color:#fff}
+  .pill{display:inline-block;background:var(--chip);border:1px solid var(--b);border-radius:999px;padding:2px 8px;font-size:11px;color:var(--muted)}
+  .card{background:var(--panel);border:1px solid var(--b);border-radius:16px;margin-top:16px;box-shadow:0 0 0 1px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.08)}
+  .card .body{padding:16px}
+  .title-s{font-weight:700;font-size:15px}
+  .hint{color:var(--muted);font-size:12px}
+  .label{font-size:13px;font-weight:600;margin-bottom:4px}
+  .field{display:block;width:100%;border:1px solid var(--b);background:var(--surface);color:var(--text);border-radius:12px;padding:8px 10px}
+  .grid2{display:grid;gap:12px}
+  @media(min-width:720px){.grid2{grid-template-columns:repeat(2,1fr)}}
+  .grid3{display:grid;gap:12px}
+  @media(min-width:720px){.grid3{grid-template-columns:repeat(3,1fr)}}
+  .mini{font-size:12px}
+  .badge{margin-left:8px}
+  .sep{height:1px;background:var(--b);margin:6px 0}
+  .card.soft{border-style:dashed}
+  .choice-vertical .label{margin-bottom:6px}
+  .choice-vertical .options{display:flex;flex-direction:column;gap:6px}
+  .choice-multi .label{margin-bottom:6px}
+  .choice-multi .options{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
+
+  /* Tabs */
+  .tabs{display:flex;gap:8px;margin-top:12px}
+  .tab{padding:8px 14px;border-radius:999px;background:var(--panel);border:1px solid var(--b);color:var(--text);cursor:pointer;user-select:none}
+  .tab.active{background:var(--blue);border-color:#2f54ff;color:#fff}
+  .view{display:none}
+  .view.active{display:block;animation:fadeIn .25s ease}
+
+  /* Accordions */
+  details{background:var(--panel-2);border:1px solid var(--b);border-radius:14px;margin-top:12px;overflow:hidden}
+  summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+  summary::-webkit-details-marker{display:none}
+
+  /* Thumbs */
+  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+  .thumb{border:1px solid var(--b);border-radius:12px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+  .thumb img{width:100%;height:90px;object-fit:cover;display:block}
+  .thumb .meta{padding:6px 8px;display:flex;justify-content:space-between;align-items:center}
+  .thumb .name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%}
+  .thumb button{border:0;background:transparent;cursor:pointer;color:#fca5a5;font-size:11px}
+
+  /* Print rules */
+  .no-print{} .print-only{display:none}
+  @media print{
+    header, .no-print{display:none !important}
+    details{border:0}
+    summary{display:none}
+    .card{border:0;margin-top:6px;box-shadow:none}
+    .wrap{max-width:100%;padding:0 10mm}
+    .print-only{display:block !important}
+    .annex h2{font-size:18px;margin:0 0 8px 0}
+    .annex h3{font-size:15px;margin:10mm 0 4mm 0}
+    .annex .item{page-break-inside:avoid; break-inside: avoid; page-break-after: always; break-after: page; margin:0; padding:0}
+    .annex img{max-width:100%;height:auto;display:block}
+    .annex .caption{font-size:12px;color:#666;margin:0 0 2mm 0}
+    .page-break{page-break-before:always; break-before: page;}
+  }
+
+  /* Select stylé (memo) */
+  select.tab {
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    padding:8px 28px 8px 12px; border-radius:999px; background:var(--panel); border:1px solid var(--b); color:var(--text);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23a0a0a0'><path d='M4 6l4 4 4-4'/></svg>");
+    background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; cursor: pointer;
+  }
+  select.tab:focus { outline: none; border-color: var(--blue); }
+
+  /* Toggle switch (clair/sombre) */
+  .switch-wrap{display:flex;align-items:center;gap:8px}
+  .switch-label{font-size:12px;color:var(--muted)}
+  .switch{position:relative;width:52px;height:28px;background:var(--panel);border:1px solid var(--b);border-radius:999px;cursor:pointer;transition:background .2s ease}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s ease}
+  .switch.sun::before{content:"☀️";position:absolute;left:8px;top:4px;font-size:16px}
+  .switch.moon::before{content:"🌙";position:absolute;right:8px;top:4px;font-size:16px}
+  .switch.on{background:var(--blue);border-color:#2f54ff}
+  .switch.on::after{transform:translateX(24px)}
+
+  /* Fade-in */
+  @keyframes fadeIn { from { opacity:0; transform: translateY(-4px);} to { opacity:1; transform:none;} }
+</style>
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="brand">
+<img alt="CNPA" class="logo" src="./cnpa-logo.png"/>
+<div>
+<div class="title">CNPA — Enquête</div>
+<div class="subtitle">v0.3.15</div>
+</div>
+</div>
+<nav class="tabs">
+<div class="tab active" data-target="#view-memo">Mémo</div>
+<div class="tab" data-target="#view-enquete">Enquête</div>
+</nav>
+<div class="row actions no-print" style="margin:10px 0 8px">
+<button class="btn" id="btnExpand">Tout déplier</button>
+<button class="btn" id="btnCollapse">Tout replier</button>
+<button class="btn primary" id="btnPrint">Imprimer / Export PDF</button>
+<button class="btn danger" id="btnReset">Réinitialiser</button>
+<!-- New sliding switch -->
+<div class="switch-wrap" style="margin-left:auto">
+<span class="switch-label" id="themeLabel">Sombre</span>
+<input hidden="" id="themeSwitch" type="checkbox"/>
+<label aria-label="Basculer thème" class="switch moon" for="themeSwitch" id="themeSwitchUI"></label>
+</div>
+</div>
+</div>
+</header>
+<main class="wrap">
+<!-- ===== Vue MEMO ===== -->
+<section class="view active" id="view-memo">
+<div class="card">
+<div class="body">
+<label for="menu1" style="font-weight:700">Choisir un type :</label>
+<select class="tab" id="menu1">
+<option value="">-- Sélectionnez un type --</option>
+<option value="particulier">Particulier</option>
+<option value="professionnel">Professionnel</option>
+<option value="temoin">Témoin / Voisinage</option>
+<option value="autorite">Autorité / Partenaires</option>
+</select>
+<select class="tab" id="menu2" style="margin-left:10px; display:none">
+<option value="">-- Sélectionnez un sous-profil --</option>
+</select>
+</div>
+</div>
+<div id="helpMessage" style="margin-top:20px; padding:16px;
+                background:#e5f0ff;
+                border:1px solid #4f7cff;
+                border-radius:12px;
+                text-align:center;
+                color:#1a1d24;
+                font-weight:500;">
+      ℹ️ Sélectionnez un type puis un sous-profil pour afficher le contenu correspondant.
+    </div>
+<!-- Sections MEMO -->
+<details id="classique">
+<summary>
+<div class="row"><span>Particulier — Propriétaire classique</span></div>
+<span class="pill">Pédagogie d’abord</span>
+</summary>
+<div class="body">
+<div class="title-s">Comportement</div>
+<ul style="margin:6px 0 12px 18px">
+<li>Posture calme et bienveillante, éviter la confrontation directe.</li>
+<li>Écouter les explications avant d’orienter vers les obligations légales.</li>
+</ul>
+<div class="title-s">Pédagogie</div>
+<ul style="margin:6px 0 0 18px">
+<li>Rappeler identification, soins, eau/abri, alimentation et exercice.</li>
+<li>Proposer des solutions locales (vétérinaire, associations, mairie).</li>
+</ul>
+</div>
+</details>
+<details id="famille">
+<summary>
+<div class="row"><span>Particulier — Famille d’accueil / nourricier non déclaré</span></div>
+<span class="pill">Accompagner</span>
+</summary>
+<div class="body">
+<div class="title-s">Comportement</div>
+<ul style="margin:6px 0 12px 18px">
+<li>Valoriser la bonne volonté tout en recadrant les responsabilités.</li>
+</ul>
+<div class="title-s">Pédagogie</div>
+<ul style="margin:6px 0 0 18px">
+<li>Expliquer que nourrir sans soigner/stériliser entretient la misère animale.</li>
+<li>Orienter vers un partenariat avec une association ou la mairie.</li>
+</ul>
+</div>
+</details>
+<details id="noe">
+<summary>
+<div class="row"><span>Particulier — Collectionneur / syndrome de Noé</span></div>
+<span class="pill">Protection &amp; Santé</span>
+</summary>
+<div class="body">
+<div class="title-s">Comportement</div>
+<ul style="margin:6px 0 12px 18px">
+<li>Empathie sans jugement, rester factuel, petites étapes.</li>
+</ul>
+<div class="title-s">Pédagogie</div>
+<ul style="margin:6px 0 0 18px">
+<li>Limiter le nombre, stériliser, envisager des placements.</li>
+<li>Mobiliser services sociaux en appui si nécessaire.</li>
+</ul>
+</div>
+</details>
+<details id="diogene">
+<summary>
+<div class="row"><span>Particulier — Syndrome de Diogène</span></div>
+<span class="pill">Sécurité d’abord</span>
+</summary>
+<div class="body">
+<div class="title-s">Comportement</div>
+<ul style="margin:6px 0 12px 18px">
+<li>Évaluer salubrité / risque incendie, rester accompagné.</li>
+</ul>
+<div class="title-s">Pédagogie</div>
+<ul style="margin:6px 0 0 18px">
+<li>Plan de remise en état progressif, coordination mairie / social.</li>
+</ul>
+</div>
+</details>
+<details id="pro">
+<summary>
+<div class="row"><span>Professionnel déclaré (élevage, pension, TAV, ERP…)</span></div>
+<span class="pill">Conformité</span>
+</summary>
+<div class="body">
+<div class="title-s">Comportement</div>
+<ul style="margin:6px 0 12px 18px">
+<li>Posture ferme mais courtoise, s’appuyer sur les textes.</li>
+<li>Tracer les constats (photos, registres).</li>
+</ul>
+<div class="title-s">Pédagogie</div>
+<ul style="margin:6px 0 0 18px">
+<li>Obligations : agrément, registres, conditions de détention et soins.</li>
+<li>Délai et liste d’actions correctives.</li>
+</ul>
+</div>
+</details>
+<details id="pro-non">
+<summary>
+<div class="row"><span>Professionnel non déclaré (élevage NAC/rente, Pet-sitter, pension…)</span></div>
+<span class="pill">Régularisation</span>
+</summary>
+<div class="body">
+<div class="title-s">Comportement</div>
+<ul style="margin:6px 0 12px 18px">
+<li>Rester neutre, sécuriser les animaux, documenter.</li>
+</ul>
+<div class="title-s">Pédagogie</div>
+<ul style="margin:6px 0 0 18px">
+<li>Mise en conformité : déclaration, agrément, locaux, assurance.</li>
+<li>Selon gravité : DDPP / dépôt de plainte.</li>
+</ul>
+</div>
+</details>
+<details id="temoin">
+<summary>
+<div class="row"><span>Témoins / Voisinage / Signalants</span></div>
+<span class="pill">Canaliser</span>
+</summary>
+<div class="body">
+<div class="title-s">Comportement</div>
+<ul style="margin:6px 0 12px 18px">
+<li>Écouter, recueillir des faits datés, éviter les conflits.</li>
+</ul>
+<div class="title-s">Pédagogie</div>
+<ul style="margin:6px 0 0 18px">
+<li>Expliquer la procédure et les délais, encourager des preuves factuelles.</li>
+</ul>
+</div>
+</details>
+<details id="autorites">
+<summary>
+<div class="row"><span>Autorités / Partenaires (PN/PM, Gendarmerie, DDPP, Services sociaux, Associations)</span></div>
+<span class="pill">Coordination</span>
+</summary>
+<div class="body">
+<div class="title-s">Comportement</div>
+<ul style="margin:6px 0 12px 18px">
+<li>Prévenir en amont, partager objectifs et rôles.</li>
+</ul>
+<div class="title-s">Pédagogie</div>
+<ul style="margin:6px 0 0 18px">
+<li>Proposer un canevas commun et des critères de gravité.</li>
+</ul>
+</div>
+</details>
+</section>
+<!-- ===== Vue ENQUETE ===== -->
+<section class="view" id="view-enquete">
+<!-- Rapport -->
+<div class="card" id="sec-rapport">
+<div class="body">
+<div class="title-s">Rapport</div>
+<div class="hint" style="margin:4px 0 12px">Cette section reste toujours visible.</div>
+<div class="grid3">
+<label><div class="label">Enquête n° <span class="hint">*</span></div><input class="field" data-path="administratif.rapport.numero"/></label>
+<label><div class="label">Enquêteur <span class="hint">*</span></div><input class="field" data-path="administratif.rapport.enqueteur"/></label>
+<label><div class="label">Date du rapport</div><input class="field" data-path="administratif.rapport.date" type="date"/></label>
+</div>
+</div>
+</div>
+<!-- Administratif -->
+<details id="sec-admin">
+<summary>
+<div class="row"><span class="title-s">Administratif</span><span class="pill badge" id="adminBadge"></span></div>
+<span class="hint">Cliquer pour (dé)plier</span>
+</summary>
+<div class="body">
+<div class="grid2">
+<label><div class="label">Nom <span class="hint">*</span></div><input class="field" data-path="administratif.identite.nom"/></label>
+<label><div class="label">Prénom <span class="hint">*</span></div><input class="field" data-path="administratif.identite.prenom"/></label>
+<label><div class="label">Adresse – voie <span class="hint">*</span></div><input class="field" data-path="administratif.adresse.voie"/></label>
+<label><div class="label">Code postal <span class="hint">*</span></div><input class="field" data-path="administratif.adresse.cp"/></label>
+<label><div class="label">Ville <span class="hint">*</span></div><input class="field" data-path="administratif.adresse.ville"/></label>
+</div>
+<div style="margin-top:12px">
+<label class="row" style="gap:8px">
+<input data-path="administratif.adresse.lieuFaitsDifferent" type="checkbox"/>
+<span>Lieu des faits différent ?</span>
+</label>
+<textarea class="field" data-path="administratif.adresse.lieuFaits" placeholder="Préciser le lieu des faits" style="margin-top:8px;display:none"></textarea>
+</div>
+<!-- Curatelle / Handicap / Témoin / Absence -->
+<div class="grid2" style="margin-top:16px">
+<div>
+<div class="label">Tutelle / Curatelle</div>
+<div class="row">
+<label><input data-path="administratif.tutelle" name="tutelle" type="radio" value="oui"/> Oui</label>
+<label><input data-path="administratif.tutelle" name="tutelle" type="radio" value="non"/> Non</label>
+<label><input checked="" data-path="administratif.tutelle" name="tutelle" type="radio" value="inconnu"/> Inconnu</label>
+</div>
+<input class="field" data-path="administratif.tutelleDetails" placeholder="Précisions tutelle/curatelle" style="margin-top:8px;display:none">
+</input></div>
+<div>
+<div class="label">Handicap</div>
+<div class="row">
+<label><input data-path="administratif.handicap.present" name="handicap" type="radio" value="oui"/> Oui</label>
+<label><input checked="" data-path="administratif.handicap.present" name="handicap" type="radio" value="non"/> Non</label>
+<label><input data-path="administratif.handicap.present" name="handicap" type="radio" value="inconnu"/> Inconnu</label>
+</div>
+<input class="field" data-path="administratif.handicap.details" placeholder="Préciser le handicap" style="margin-top:8px;display:none">
+</input></div>
+<div>
+<div class="label">Témoin</div>
+<div class="row">
+<label><input data-path="administratif.temoin.present" name="temoin" type="radio" value="oui"/> Oui</label>
+<label><input checked="" data-path="administratif.temoin.present" name="temoin" type="radio" value="non"/> Non</label>
+</div>
+<input class="field" data-path="administratif.temoin.coord" placeholder="Coordonnées du témoin" style="margin-top:8px;display:none">
+</input></div>
+<div class="card soft">
+<div class="body">
+<div class="title-s" style="margin-bottom:8px">Absence lors du passage</div>
+<label class="row" style="gap:8px">
+<input data-path="administratif.absence.personneAbsente" type="checkbox">
+<span>Personne absente</span>
+</input></label>
+<div id="avisWrap" style="margin-top:8px;display:none">
+<div class="label">Avis de passage remis</div>
+<label class="row" style="gap:16px">
+<input data-path="administratif.absence.avisPassage" name="avisPassage" type="radio" value="oui"/> Oui
+                  <input data-path="administratif.absence.avisPassage" name="avisPassage" type="radio" value="non"/> Non
+                </label>
+</div>
+</div>
+</div>
+</div>
+<!-- Signalant -->
+<div class="card soft" style="margin-top:16px">
+<div class="body">
+<div class="title-s" style="margin-bottom:8px">Signalant</div>
+<div class="grid3">
+<label><div class="label">Nom</div><input class="field" data-path="administratif.signalant.nom"/></label>
+<label><div class="label">Prénom</div><input class="field" data-path="administratif.signalant.prenom"/></label>
+</div>
+<div class="label" style="margin-top:12px">Contact signalant</div>
+<div class="grid3">
+<label><div class="mini">N° de téléphone</div><input class="field" data-path="administratif.signalant.contact.tel"/></label>
+<label><div class="mini">Adresse</div><input class="field" data-path="administratif.signalant.contact.adresse"/></label>
+<label><div class="mini">Mail</div><input class="field" data-path="administratif.signalant.contact.mail"/></label>
+</div>
+</div>
+</div>
+<div class="grid2" style="margin-top:16px">
+<label>
+<div class="label">Antécédents</div>
+<textarea class="field" data-path="administratif.antecedents" rows="3"></textarea>
+</label>
+<label>
+<div class="label">Nombre d’animaux présents</div>
+<input class="field" data-path="administratif.nbAnimaux" min="0" type="number">
+</input></label>
+<div>
+<div class="label">Vétérinaire habituel</div>
+<input class="field" data-path="administratif.veterinaire.nom" placeholder="Nom"/>
+<input class="field" data-path="administratif.veterinaire.contact" placeholder="Téléphone / email" style="margin-top:8px"/>
+</div>
+<div>
+<div class="label">Contact détenteur</div>
+<input class="field" data-path="administratif.contactDetenteur.tel" placeholder="Téléphone"/>
+<input class="field" data-path="administratif.contactDetenteur.mail" placeholder="Email" style="margin-top:8px"/>
+</div>
+<div>
+<div class="label">Autorités présentes</div>
+<div class="grid3">
+<label><input data-path="administratif.autorites.pn" type="checkbox"/> PN</label>
+<label><input data-path="administratif.autorites.pm" type="checkbox"/> PM</label>
+<label><input data-path="administratif.autorites.gendarmerie" type="checkbox"/> Gendarmerie</label>
+<label><input data-path="administratif.autorites.ddpp" type="checkbox"/> DDPP</label>
+</div>
+<input class="field" data-path="administratif.autorites.associations" placeholder="Autres associations / services" style="margin-top:8px">
+</input></div>
+</div>
+</div>
+</details>
+<details id="sec-sit">
+<summary>
+<div class="row"><span class="title-s">Type de situation</span><span class="pill badge" id="sitBadge"></span></div>
+<span class="hint">Choix exclusifs pour “Zone” et “Statut” + un **contexte particulier** optionnel.</span>
+</summary>
+<div class="body">
+<div class="choice-vertical">
+<div class="label">Zone (choix unique)</div>
+<div class="options">
+<label><input data-path="typeSituation.zoneMode" name="zoneMode" type="radio" value="urbaine"/> Zone urbaine</label>
+<label><input data-path="typeSituation.zoneMode" name="zoneMode" type="radio" value="rurale"/> Zone rurale</label>
+</div>
+</div>
+<div id="sitUrbain" style="display:none;margin-top:12px">
+<div class="title-s" style="margin-bottom:6px">Zone urbaine (choix unique)</div>
+<div class="grid3">
+<label><input data-path="typeSituation.urbaine" name="urbaineLieu" type="radio" value="appartement"/> Appartement</label>
+<label><input data-path="typeSituation.urbaine" name="urbaineLieu" type="radio" value="maison"/> Maison</label>
+<label><input data-path="typeSituation.urbaine" name="urbaineLieu" type="radio" value="garage"/> Garage</label>
+<label><input data-path="typeSituation.urbaine" name="urbaineLieu" type="radio" value="rue"/> Rue</label>
+<label><input data-path="typeSituation.urbaine" name="urbaineLieu" type="radio" value="cave"/> Cave</label>
+<label><input data-path="typeSituation.urbaine" name="urbaineLieu" type="radio" value="squat"/> Squat</label>
+<label><input data-path="typeSituation.urbaine" name="urbaineLieu" type="radio" value="parking"/> Parking souterrain</label>
+</div>
+<div class="title-s" style="margin:16px 0 6px">Secteur intervention</div>
+<div class="grid3">
+<label><input data-path="typeSituation.secteur.pn" type="checkbox"/> Police nationale</label>
+<label><input data-path="typeSituation.secteur.gendarmerie" type="checkbox"/> Gendarmerie</label>
+<label><input data-path="typeSituation.secteur.pm" type="checkbox"/> Police municipale</label>
+</div>
+</div>
+<div id="sitRural" style="display:none;margin-top:12px">
+<div class="title-s" style="margin-bottom:6px">Zone rurale (choix unique)</div>
+<div class="grid3">
+<label><input data-path="typeSituation.rurale" name="ruraleLieu" type="radio" value="ferme"/> Ferme</label>
+<label><input data-path="typeSituation.rurale" name="ruraleLieu" type="radio" value="parc"/> Parc</label>
+<label><input data-path="typeSituation.rurale" name="ruraleLieu" type="radio" value="elevage"/> Élevage</label>
+<label><input data-path="typeSituation.rurale" name="ruraleLieu" type="radio" value="terrainVague"/> Terrain vague</label>
+<label><input data-path="typeSituation.rurale" name="ruraleLieu" type="radio" value="foret"/> Forêt</label>
+</div>
+<div class="title-s" style="margin:16px 0 6px">Secteur intervention</div>
+<div class="grid3">
+<label><input data-path="typeSituation.secteur.pn" type="checkbox"/> Police nationale</label>
+<label><input data-path="typeSituation.secteur.gendarmerie" type="checkbox"/> Gendarmerie</label>
+<label><input data-path="typeSituation.secteur.pm" type="checkbox"/> Police municipale</label>
+</div>
+</div>
+<div class="sep"></div>
+<div class="choice-vertical" style="margin-top:12px">
+<div class="label">Statut (choix unique)</div>
+<div class="options">
+<label><input data-path="typeSituation.statutMode" name="statutMode" type="radio" value="professionnel"/> Professionnel</label>
+<label><input data-path="typeSituation.statutMode" name="statutMode" type="radio" value="particulier"/> Particulier</label>
+</div>
+<div class="hint" style="margin-top:6px">
+            Conserver un vocabulaire neutre et factuel.
+          </div>
+</div>
+<!-- Contexte particulier (neutre) -->
+<div class="card soft" style="margin-top:12px">
+<div class="body">
+<div class="title-s" style="margin-bottom:6px">Contexte particulier</div>
+<label class="row" style="gap:8px">
+<input data-path="typeSituation.contexte.habitatMobile" type="checkbox"/>
+<span>Public voyageur</span>
+</label>
+<div class="hint" style="margin-top:6px">Mention descriptive pour faciliter la coordination (aires d’accueil, médiation), sans jugement.</div>
+</div>
+</div>
+<div id="sitPro" style="display:none;margin-top:12px">
+<div class="title-s" style="margin-bottom:6px">Professionnel</div>
+<div class="grid3">
+<label><input data-path="typeSituation.professionnel.animalerie" type="checkbox"/> Animalerie</label>
+<label><input data-path="typeSituation.professionnel.educateur" type="checkbox"/> Éducateur / Comportementaliste</label>
+<label><input data-path="typeSituation.professionnel.elevageNac" type="checkbox"/> Élevage NAC</label>
+<label><input data-path="typeSituation.professionnel.elevageRente" type="checkbox"/> Élevage de rente</label>
+<label><input data-path="typeSituation.professionnel.veterinaire" type="checkbox"/> Vétérinaire</label>
+<label><input data-path="typeSituation.professionnel.tav" type="checkbox"/> TAV</label>
+<label><input data-path="typeSituation.professionnel.pension" type="checkbox"/> Pension</label>
+<label><input data-path="typeSituation.professionnel.refuge" type="checkbox"/> Refuge / Fourrière</label>
+<label><input data-path="typeSituation.professionnel.erp" type="checkbox"/> ERP avec animaux</label>
+<label><input data-path="typeSituation.professionnel.petSitter" type="checkbox"/> Pet-sitter</label>
+<label><input data-path="typeSituation.professionnel.cirque" type="checkbox"/> Cirque</label>
+<label><input data-path="typeSituation.professionnel.centreEquestre" type="checkbox"/> Centre équestre</label>
+</div>
+<div id="proStatutWrap" style="display:none;margin-top:8px">
+<div class="label">Statut professionnel (choix unique)</div>
+<label class="row"><input data-path="typeSituation.professionnel.statut" name="pro_statut" type="radio" value="declare"/> Déclaré</label>
+<label class="row"><input data-path="typeSituation.professionnel.statut" name="pro_statut" type="radio" value="nonDeclare"/> Non déclaré</label>
+</div>
+<div id="refugeAgreeWrap" style="display:none;margin-top:8px">
+<div class="label">Refuge / Fourrière – Agrément</div>
+<label class="row"><input data-path="typeSituation.professionnel.refugeAgree" name="refAgree" type="radio" value="agree"/> Agréé</label>
+<label class="row"><input data-path="typeSituation.professionnel.refugeAgree" name="refAgree" type="radio" value="non"/> Non agréé</label>
+</div>
+<div id="erpDetailsWrap" style="display:none;margin-top:8px">
+<div class="label">ERP – Détails</div>
+<input class="field" data-path="typeSituation.professionnel.erpDetails" placeholder="Bar à chats, restaurant, parc de loisirs…">
+</input></div>
+</div>
+<div id="sitPart" style="display:none;margin-top:12px">
+<div class="title-s" style="margin-bottom:6px">Particulier</div>
+<div class="grid3">
+<label><input data-path="typeSituation.particulier.precarite" type="checkbox"/> Précarité financière</label>
+<label><input data-path="typeSituation.particulier.violent" type="checkbox"/> Violent</label>
+<label><input data-path="typeSituation.particulier.diogene" type="checkbox"/> Syndrome de Diogène</label>
+<label><input data-path="typeSituation.particulier.noe" type="checkbox"/> Syndrome de Noé</label>
+<label><input data-path="typeSituation.particulier.accumulation" type="checkbox"/> Accumulation volontaire</label>
+<label><input data-path="typeSituation.particulier.sdf" type="checkbox"/> SDF</label>
+</div>
+<label style="display:block;margin-top:8px">
+<div class="label">Contexte social compliqué</div>
+<label class="row" style="gap:8px;margin:6px 0 8px 0">
+<input data-path="typeSituation.particulier.contexte.present" type="checkbox"/> Présent
+            </label>
+<input class="field" data-path="typeSituation.particulier.contexte.details" placeholder="Précisions : alcool, drogues, violences…" style="display:none">
+</input></label>
+<div class="row" style="gap:12px;margin-top:8px">
+<div class="label">Détention interdite</div>
+<label><input data-path="typeSituation.particulier.detentionInterdite" name="detInt" type="radio" value="oui"/> Oui</label>
+<label><input checked="" data-path="typeSituation.particulier.detentionInterdite" name="detInt" type="radio" value="non"/> Non</label>
+</div>
+</div>
+</div>
+</details>
+<details id="sec-anim">
+<summary>
+<div class="row"><span class="title-s">Type d’animaux</span><span class="pill badge" id="animBadge"></span></div>
+<span class="hint">Cliquer pour (dé)plier</span>
+</summary>
+<div class="body grid3">
+<label><input data-path="typesAnimaux.nac" type="checkbox"/> NAC</label>
+<label><input data-path="typesAnimaux.chien" type="checkbox"/> Chien</label>
+<label><input data-path="typesAnimaux.chienChasse" type="checkbox"/> Chien de chasse</label>
+<label><input data-path="typesAnimaux.chienCategorie" type="checkbox"/> Chien catégorisé</label>
+<label><input data-path="typesAnimaux.chat" type="checkbox"/> Chat</label>
+<label><input data-path="typesAnimaux.equides" type="checkbox"/> Équidés</label>
+<label><input data-path="typesAnimaux.rente" type="checkbox"/> Animaux de rente</label>
+<label><input data-path="typesAnimaux.fauneSauvage" type="checkbox"/> Faune sauvage</label>
+<label><input data-path="typesAnimaux.aquatiques" type="checkbox"/> Aquatiques</label>
+<label><input data-path="typesAnimaux.reptiles" type="checkbox"/> Reptiles</label>
+<label><input data-path="typesAnimaux.exotiques" type="checkbox"/> Espèces exotiques</label>
+<label><input data-path="typesAnimaux.aviculture" type="checkbox"/> Aviculture</label>
+<label><input data-path="typesAnimaux.rapaces" type="checkbox"/> Oiseaux de proie / Rapaces</label>
+<label><input data-path="typesAnimaux.interdits" type="checkbox"/> Espèces interdites</label>
+<label style="grid-column:1/-1">
+<div class="label">Autre (préciser)</div>
+<input class="field" data-path="typesAnimaux.autre">
+</input></label>
+</div>
+</details>
+<details id="sec-ident">
+<summary>
+<div class="row"><span class="title-s">Identification des animaux</span></div>
+<span class="hint">Cliquer pour (dé)plier</span>
+</summary>
+<div class="body">
+<div class="row" style="justify-content:space-between;align-items:center">
+<div class="title-s">Animaux</div>
+<button class="btn no-print" id="btnAddAnimal">+ Ajouter un animal</button>
+</div>
+<div id="animauxList" style="margin-top:12px"></div>
+<div style="margin-top:16px">
+<div class="label">Justificatifs I-CAD / Carnet (photos)</div>
+<div class="hint">Ajoute des clichés (recto/verso carte I-CAD, page vaccinations, etc.).</div>
+<input accept="image/*" class="no-print" id="idDocsInput" multiple="" style="margin-top:8px" type="file">
+<div class="thumbs" id="idDocsList" style="margin-top:8px"></div>
+</input></div>
+</div>
+</details>
+<details id="sec-const">
+<summary>
+<div class="row"><span class="title-s">Constats sur place</span><span class="pill badge" id="constBadge"></span></div>
+<span class="hint">Cliquer pour (dé)plier</span>
+</summary>
+<div class="body">
+<div class="title-s" style="margin-bottom:6px">État des lieux</div>
+<div class="grid3">
+<label><input data-path="constats.lieux.proprete" type="checkbox"/> Propreté déficiente</label>
+<label><input data-path="constats.lieux.odeurs" type="checkbox"/> Odeurs fortes</label>
+<label><input data-path="constats.lieux.cadavres" type="checkbox"/> Présence de cadavres</label>
+<label><input data-path="constats.lieux.parasites" type="checkbox"/> Parasites visibles</label>
+<label><input data-path="constats.lieux.eauNourriture" type="checkbox"/> Nourriture / Eau insuffisantes</label>
+<label><input data-path="constats.lieux.abris" type="checkbox"/> Abris inadaptés</label>
+</div>
+<div class="grid3" style="margin-top:12px">
+<div class="choice-vertical">
+<div class="label">Eau à volonté</div>
+<div class="options">
+<label><input data-path="constats.lieux.eauVolonte" name="eauVolonte" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.lieux.eauVolonte" name="eauVolonte" type="radio" value="non"/> Non</label>
+</div>
+</div>
+<div class="choice-vertical">
+<div class="label">Nourriture présente</div>
+<div class="options">
+<label><input data-path="constats.lieux.nourriturePresente" name="nourriturePresente" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.lieux.nourriturePresente" name="nourriturePresente" type="radio" value="non"/> Non</label>
+</div>
+</div>
+<div class="choice-vertical">
+<div class="label">Présence d’abri</div>
+<div class="options">
+<label><input data-path="constats.lieux.abriPresent" name="abriPresent" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.lieux.abriPresent" name="abriPresent" type="radio" value="non"/> Non</label>
+</div>
+</div>
+</div>
+<div class="choice-multi" style="margin-top:12px">
+<div class="label">Accès</div>
+<div class="options">
+<label><input data-path="constats.lieux.acces.interieur" type="checkbox"/> Intérieur</label>
+<label><input data-path="constats.lieux.acces.exterieur" type="checkbox"/> Extérieur</label>
+</div>
+</div>
+<div class="grid3" style="margin-top:12px">
+<div class="choice-vertical">
+<div class="label">Animal attaché</div>
+<div class="options">
+<label><input data-path="constats.lieux.animalAttache" name="animalAttache" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.lieux.animalAttache" name="animalAttache" type="radio" value="non"/> Non</label>
+</div>
+</div>
+<div class="choice-vertical" id="attache2mGroup" style="display:none">
+<div class="label">Attache &gt; 2 m</div>
+<div class="options">
+<label><input data-path="constats.lieux.attacheSup2m" name="attacheSup2m" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.lieux.attacheSup2m" name="attacheSup2m" type="radio" value="non"/> Non</label>
+</div>
+</div>
+<div class="choice-vertical">
+<div class="label">Objets dangereux sur le lieu de vie</div>
+<div class="options">
+<label><input data-path="constats.lieux.objetsDangereux" name="objetsDangereux" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.lieux.objetsDangereux" name="objetsDangereux" type="radio" value="non"/> Non</label>
+</div>
+</div>
+</div>
+<div class="title-s" style="margin:16px 0 6px">Stress, santé &amp; locomotion</div>
+<div class="grid3">
+<div class="choice-vertical">
+<div class="label">Stress physique</div>
+<div class="options">
+<label><input data-path="constats.sante.stressPhysique" name="stressPhysique" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.sante.stressPhysique" name="stressPhysique" type="radio" value="non"/> Non</label>
+</div>
+</div>
+<div class="choice-vertical">
+<div class="label">Stress thermique</div>
+<div class="options">
+<label><input data-path="constats.sante.stressThermique" name="stressThermique" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.sante.stressThermique" name="stressThermique" type="radio" value="non"/> Non</label>
+</div>
+</div>
+<div class="choice-vertical">
+<div class="label">Blessures / lésions</div>
+<div class="options">
+<label><input data-path="constats.sante.blessures" name="blessures" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.sante.blessures" name="blessures" type="radio" value="non"/> Non</label>
+</div>
+</div>
+<div class="choice-vertical">
+<div class="label">Déplacement aisé</div>
+<div class="options">
+<label><input data-path="constats.sante.deplacementAise" name="deplacementAise" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.sante.deplacementAise" name="deplacementAise" type="radio" value="non"/> Non</label>
+</div>
+</div>
+<div class="choice-vertical">
+<div class="label">Animal malade</div>
+<div class="options">
+<label><input data-path="constats.sante.animalMalade" name="animalMalade" type="radio" value="oui"/> Oui</label>
+<label><input data-path="constats.sante.animalMalade" name="animalMalade" type="radio" value="non"/> Non</label>
+</div>
+</div>
+</div>
+</div>
+</details>
+<details id="sec-photos">
+<summary>
+<div class="row"><span class="title-s">Photographies</span></div>
+<span class="hint">Miniatures à l’écran — annexes pleine page à l’impression/PDF (1 image = 1 page)</span>
+</summary>
+<div class="body">
+<input accept="image/*" class="no-print" id="photosInput" multiple="" style="margin-top:8px" type="file">
+<div class="thumbs" id="photosList" style="margin-top:8px"></div>
+</input></div>
+</details>
+<details id="sec-suites">
+<summary>
+<div class="row"><span class="title-s">Suites envisagées</span></div>
+<span class="hint">Cliquer pour (dé)plier</span>
+</summary>
+<div class="body grid3">
+<label><input data-path="suites.ddpp" type="checkbox"/> Transmission DDPP</label>
+<label><input data-path="suites.depotPlainte" type="checkbox"/> Dépôt de plainte</label>
+<label><input data-path="suites.miseEnDemeure" type="checkbox"/> Mise en demeure</label>
+<label><input data-path="suites.avertissement" type="checkbox"/> Avertissement</label>
+<label><input data-path="suites.conseilsPedagogie" type="checkbox"/> Conseils / pédagogie</label>
+<label><input data-path="suites.saisie" type="checkbox"/> Saisie totale</label>
+<label><input data-path="suites.saisiePartielle" type="checkbox"/> Saisie partielle</label>
+<label><input data-path="suites.placement" type="checkbox"/> Placement provisoire</label>
+<label><input data-path="suites.soinsUrgents" type="checkbox"/> Soins urgents / vétérinaire</label>
+</div>
+</details>
+<section class="print-only" id="annexesPrint">
+<div class="page-break"></div>
+<div class="annex">
+<h2>Annexes photographiques</h2>
+<div id="annexIdDocs"></div>
+<div id="annexPhotos"></div>
+</div>
+</section>
+</section>
+</main>
+<footer class="wrap" style="padding:24px 16px;text-align:center"><div class="hint">v0.3.15</div></footer>
+<script>
+  // ====== Theme switch (persisté) ======
+  (function(){
+    const key = 'cnpa_theme';
+    const sw = document.getElementById('themeSwitch');
+    const ui = document.getElementById('themeSwitchUI');
+    const label = document.getElementById('themeLabel');
+    const pref = localStorage.getItem(key) || 'dark';
+    const setMode = (mode)=>{
+      if(mode === 'light'){ document.body.setAttribute('data-theme','light'); sw.checked=true; ui.classList.add('on','sun'); ui.classList.remove('moon'); label.textContent='Clair'; }
+      else { document.body.removeAttribute('data-theme'); sw.checked=false; ui.classList.remove('on','sun'); ui.classList.add('moon'); label.textContent='Sombre'; }
+      localStorage.setItem(key, mode);
+    };
+    setMode(pref);
+    sw.addEventListener('change', ()=> setMode(sw.checked ? 'light' : 'dark'));
+    // Also allow clicking the visual UI label to toggle (for accessibility, it's tied to input via "for")
+  })();
+
+  // ====== Onglets ======
+  document.querySelectorAll('.tab[data-target]').forEach(t => {
+    t.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab[data-target]').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      t.classList.add('active');
+      const target = document.querySelector(t.dataset.target);
+      if(target){ target.classList.add('active'); }
+      if(t.dataset.target === '#view-enquete'){ buildAnnexes(); }
+    });
+  });
+
+  // ====== État & helpers (sans import/export) ======
+  let state = defaultState();
+  function defaultState(){
+    return {
+      administratif:{
+        rapport:{numero:'',enqueteur:'',date:''},
+        identite:{nom:'',prenom:''},
+        adresse:{voie:'',cp:'',ville:'',lieuFaitsDifferent:false,lieuFaits:''},
+        signalant:{nom:'',prenom:'',contact:{tel:'',adresse:'',mail:''}},
+        absence:{personneAbsente:false,avisPassage:''},
+        tutelle:'inconnu',
+        tutelleDetails:'',
+        handicap:{present:'non',details:''},
+        temoin:{present:'non',coord:''},
+        veterinaire:{nom:'',contact:''},
+        contactDetenteur:{tel:'',mail:''},
+        antecedents:'',
+        nbAnimaux:'',
+        autorites:{pn:false,pm:false,gendarmerie:false,ddpp:false,associations:''}
+      },
+      typeSituation:{
+        zoneMode:'',
+        statutMode:'',
+        urbaine:'',
+        rurale:'',
+        secteur:{pn:false,gendarmerie:false,pm:false},
+        contexte:{habitatMobile:false},
+        professionnel:{
+          animalerie:false,educateur:false,elevageNac:false,elevageRente:false,
+          veterinaire:false,tav:false,pension:false,refuge:false,refugeAgree:'',
+          erp:false,erpDetails:'',petSitter:false,cirque:false,centreEquestre:false,
+          statut:''
+        },
+        particulier:{precarite:false,contexte:{present:false,details:''},violent:false,diogene:false,noe:false,accumulation:false,detentionInterdite:'non',sdf:false}
+      },
+      typeMaltraitance:{
+        negligence:{bienEtre:false,connaissance:false,defautSoinsInv:false},
+        active:{violence:false,sexuelle:false,torture:false,defautSoinsVol:false,combat:false},
+        autres:{abandon:false,surexploitation:false,surpopulation:false,nonConformite:false}
+      },
+      identification:{ animaux:[], idDocs:[] },
+      typesAnimaux:{nac:false,chien:false,chienChasse:false,chienCategorie:false,chat:false,equides:false,rente:false,fauneSauvage:false,aquatiques:false,reptiles:false,exotiques:false,aviculture:false,rapaces:false,interdits:false,autre:''},
+      constats:{
+        lieux:{
+          proprete:false,odeurs:false,cadavres:false,parasites:false,eauNourriture:false,abris:false,
+          eauVolonte:'',nourriturePresente:'',abriPresent:'',
+          acces:{interieur:false,exterieur:false},
+          animalAttache:'',attacheSup2m:'',objetsDangereux:''
+        },
+        sante:{stressPhysique:'',stressThermique:'',blessures:'',deplacementAise:'',animalMalade:''}
+      },
+      photos:[],
+      suites:{
+        ddpp:false,depotPlainte:false,miseEnDemeure:false,avertissement:false,conseilsPedagogie:false,
+        saisie:false,saisiePartielle:false,placement:false,soinsUrgents:false
+      }
+    }
+  }
+  function getByPath(obj, path){ return path.split('.').reduce((o,k)=>o&&o[k], obj); }
+  function setByPath(obj, path, value){
+    const keys = path.split('.'); let ref = obj;
+    for(let i=0;i<keys.length-1;i++){ref = ref[keys[i]]}
+    ref[keys[keys.length-1]] = value;
+  }
+
+  // ====== Animaux ======
+  const animauxList = document.getElementById('animauxList');
+  document.getElementById('btnAddAnimal')?.addEventListener('click', ()=>{
+    state.identification.animaux.push({
+      nom:'',espece:'',sexe:'',race:'',age:'',
+      tatouage:'inconnu',numTatouage:'',
+      puce:'inconnu',numPuce:'',
+      carnet:'inconnu',ageLegal:'inconnu'
+    });
+    renderAnimaux(); bindInputs();
+  });
+  function removeAnimal(idx){ state.identification.animaux.splice(idx,1); renderAnimaux(); bindInputs(); }
+  function renderAnimaux(){
+    if(!state.identification.animaux.length){
+      animauxList.innerHTML = '<div class="hint">Aucun animal ajouté. Utilise “Ajouter un animal”.</div>'; return;
+    }
+    animauxList.innerHTML = state.identification.animaux.map((a,i)=>`
+      <div class="card" style="margin-bottom:12px">
+        <div class="body">
+          <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="title-s">Animal #${i+1}</div>
+            <button class="btn no-print" onclick="removeAnimal(${i})">Supprimer</button>
+          </div>
+          <div class="grid3">
+            <label><div class="label">Nom</div><input class="field" data-path="identification.animaux.${i}.nom"></label>
+            <label><div class="label">Espèce</div><input class="field" data-path="identification.animaux.${i}.espece"></label>
+            <label><div class="label">Sexe</div>
+              <div class="row mini">
+                <label><input type="radio" name="sexe_${i}" value="M" data-path="identification.animaux.${i}.sexe"> M</label>
+                <label><input type="radio" name="sexe_${i}" value="F" data-path="identification.animaux.${i}.sexe"> F</label>
+              </div>
+            </label>
+            <label><div class="label">Race</div><input class="field" data-path="identification.animaux.${i}.race"></label>
+            <label><div class="label">Âge</div><input class="field" data-path="identification.animaux.${i}.age" placeholder="ex. 2 ans"></label>
+          </div>
+          <div class="grid3" style="margin-top:12px">
+            <div>
+              <div class="label">Tatouage</div>
+              <label><input type="radio" name="tat_${i}" value="oui" data-path="identification.animaux.${i}.tatouage"> Oui</label>
+              <label><input type="radio" name="tat_${i}" value="non" data-path="identification.animaux.${i}.tatouage"> Non</label>
+              <label><input type="radio" name="tat_${i}" value="inconnu" data-path="identification.animaux.${i}.tatouage" checked> Inconnu</label>
+              <input class="field" placeholder="Numéro tatouage" data-path="identification.animaux.${i}.numTatouage" style="margin-top:8px;display:none" />
+            </div>
+            <div>
+              <div class="label">Puce électronique</div>
+              <label><input type="radio" name="puce_${i}" value="oui" data-path="identification.animaux.${i}.puce"> Oui</label>
+              <label><input type="radio" name="puce_${i}" value="non" data-path="identification.animaux.${i}.puce"> Non</label>
+              <label><input type="radio" name="puce_${i}" value="inconnu" data-path="identification.animaux.${i}.puce" checked> Inconnu</label>
+              <input class="field" placeholder="Numéro puce" data-path="identification.animaux.${i}.numPuce" style="margin-top:8px;display:none" />
+            </div>
+            <div>
+              <div class="label">Carnet de santé / vaccination</div>
+              <label><input type="radio" name="carnet_${i}" value="oui" data-path="identification.animaux.${i}.carnet"> Oui</label>
+              <label><input type="radio" name="carnet_${i}" value="non" data-path="identification.animaux.${i}.carnet"> Non</label>
+              <label><input type="radio" name="carnet_${i}" value="inconnu" data-path="identification.animaux.${i}.carnet" checked> Inconnu</label>
+            </div>
+            <div>
+              <div class="label">Âge légal de cession respecté</div>
+              <label><input type="radio" name="ageLegal_${i}" value="oui" data-path="identification.animaux.${i}.ageLegal"> Oui</label>
+              <label><input type="radio" name="ageLegal_${i}" value="non" data-path="identification.animaux.${i}.ageLegal"> Non</label>
+              <label><input type="radio" name="ageLegal_${i}" value="inconnu" data-path="identification.animaux.${i}.ageLegal" checked> Inconnu</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ====== Fichiers / Miniatures ======
+  const idDocsInput = document.getElementById('idDocsInput');
+  const idDocsList  = document.getElementById('idDocsList');
+  const photosInput = document.getElementById('photosInput');
+  const photosList  = document.getElementById('photosList');
+  window.removeIdDoc = function(idx){ state.identification.idDocs.splice(idx,1); renderThumbs(idDocsList, state.identification.idDocs, 'removeIdDoc'); buildAnnexes(); }
+  window.removePhoto = function(idx){ state.photos.splice(idx,1); renderThumbs(photosList, state.photos, 'removePhoto'); buildAnnexes(); }
+  idDocsInput?.addEventListener('change', e=>{
+    readFilesAsDataURLs(e.target.files, items=>{
+      state.identification.idDocs.push(...items);
+      renderThumbs(idDocsList, state.identification.idDocs, 'removeIdDoc');
+      buildAnnexes();
+      idDocsInput.value = '';
+    });
+  });
+  photosInput?.addEventListener('change', e=>{
+    readFilesAsDataURLs(e.target.files, items=>{
+      state.photos.push(...items);
+      renderThumbs(photosList, state.photos, 'removePhoto');
+      buildAnnexes();
+      photosInput.value='';
+    });
+  });
+  function readFilesAsDataURLs(files, cb){
+    const arr = Array.from(files||[]);
+    let i=0, out=[];
+    if(!arr.length){ cb(out); return; }
+    (function next(){
+      const f = arr[i]; const r = new FileReader();
+      r.onload = ()=>{ out.push({name:f.name, type:f.type||'image/*', data:r.result}); i++; (i<arr.length)? next() : cb(out); };
+      r.onerror = ()=>{ i++; (i<arr.length)? next() : cb(out); };
+      r.readAsDataURL(f);
+    })();
+  }
+  function renderThumbs(container, items, onRemove){
+    container.innerHTML = items.map((it, idx)=>`
+      <div class="thumb">
+        <img src="${it.data}" alt="${it.name}"/>
+        <div class="meta">
+          <span class="name" title="${it.name}">${it.name}</span>
+          <button type="button" onclick="${onRemove}(${idx})">Suppr.</button>
+        </div>
+      </div>
+    `).join('') || '<div class="hint">Aucun fichier.</div>';
+  }
+
+  // ====== Annexes impression ======
+  function buildAnnexes(){
+    const annexId = document.getElementById('annexIdDocs');
+    const annexPh = document.getElementById('annexPhotos');
+    if(!annexId || !annexPh) return;
+    annexId.innerHTML = '';
+    annexPh.innerHTML = '';
+
+    if(state.identification.idDocs.length){
+      const h = document.createElement('h3'); h.textContent = 'Annexes – Pièces justificatives (I-CAD / Carnets)';
+      annexId.appendChild(h);
+      state.identification.idDocs.forEach((it, i)=>{
+        const div = document.createElement('div'); div.className='item';
+        div.innerHTML = `<div class="caption">Justificatif #${i+1} – ${it.name}</div><img src="${it.data}" alt="${it.name}">`;
+        annexId.appendChild(div);
+      });
+    }
+    if(state.photos.length){
+      const h2 = document.createElement('h3'); h2.textContent = 'Annexes – Photographies de constat';
+      annexPh.appendChild(h2);
+      state.photos.forEach((it, i)=>{
+        const div = document.createElement('div'); div.className='item';
+        div.innerHTML = `<div class="caption">Photo #${i+1} – ${it.name}</div><img src="${it.data}" alt="${it.name}">`;
+        annexPh.appendChild(div);
+      });
+    }
+  }
+
+  // ====== Bind inputs & visibilité ======
+  function bindInputs(){
+    document.querySelectorAll('[data-path]').forEach(el => {
+      if(el.dataset.bound === '1') return;
+      const path = el.getAttribute('data-path');
+      const val = getByPath(state, path);
+      if(el.type === 'checkbox') el.checked = !!val;
+      else if(el.type === 'radio'){ el.checked = (el.value === String(val)); }
+      else el.value = val ?? '';
+      el.addEventListener('change', () => {
+        const v = (el.type === 'checkbox') ? el.checked : (el.type === 'radio' ? el.value : el.value);
+        setByPath(state, path, v);
+        refreshVisibility();
+      });
+      el.dataset.bound = '1';
+    });
+    refreshVisibility();
+  }
+
+  function refreshVisibility(){
+    // Lieu des faits différent
+    const diff = document.querySelector('[data-path="administratif.adresse.lieuFaitsDifferent"]');
+    const diffTxt = document.querySelector('[data-path="administratif.adresse.lieuFaits"]');
+    if(diff && diffTxt){ diffTxt.style.display = diff.checked ? '' : 'none'; }
+
+    // Absence -> avis
+    const absChk = document.querySelector('[data-path="administratif.absence.personneAbsente"]');
+    const avisWrap = document.getElementById('avisWrap');
+    if(avisWrap && absChk) avisWrap.style.display = absChk.checked ? '' : 'none';
+
+    // Zone / Statut
+    const zone = getByPath(state,'typeSituation.zoneMode');
+    const statut = getByPath(state,'typeSituation.statutMode');
+    document.getElementById('sitUrbain').style.display = (zone==='urbaine') ? '' : 'none';
+    document.getElementById('sitRural').style.display  = (zone==='rurale')  ? '' : 'none';
+    document.getElementById('sitPro').style.display   = (statut==='professionnel') ? '' : 'none';
+    document.getElementById('sitPart').style.display  = (statut==='particulier')   ? '' : 'none';
+
+    // Pro statut conditionnel
+    const pro = state.typeSituation?.professionnel || {};
+    const showStatut = !!(pro.elevageNac || pro.elevageRente || pro.tav || pro.petSitter || pro.pension);
+    const proWrap = document.getElementById('proStatutWrap');
+    if(proWrap) proWrap.style.display = (statut==='professionnel' && showStatut) ? '' : 'none';
+
+    // Refuge agrément + ERP détails
+    const refChk = document.querySelector('[data-path="typeSituation.professionnel.refuge"]');
+    const refWrap = document.getElementById('refugeAgreeWrap');
+    if(refWrap) refWrap.style.display = (statut==='professionnel' && refChk && refChk.checked) ? '' : 'none';
+    const erpChk = document.querySelector('[data-path="typeSituation.professionnel.erp"]');
+    const erpWrap = document.getElementById('erpDetailsWrap');
+    if(erpWrap) erpWrap.style.display = (statut==='professionnel' && erpChk && erpChk.checked) ? '' : 'none';
+
+    // Particulier contexte
+    const ctxtChk = document.querySelector('[data-path="typeSituation.particulier.contexte.present"]');
+    const ctxtDetails = document.querySelector('[data-path="typeSituation.particulier.contexte.details"]');
+    if(ctxtDetails) ctxtDetails.style.display = (statut==='particulier' && ctxtChk && ctxtChk.checked) ? '' : 'none';
+
+
+    // Numéro tatouage / puce visibles si "Oui"
+    (state.identification.animaux || []).forEach((a, i) => {
+      const tatRadioVal = getByPath(state, `identification.animaux.${i}.tatouage`);
+      const puceRadioVal = getByPath(state, `identification.animaux.${i}.puce`);
+      const tatInput = document.querySelector(`[data-path="identification.animaux.${i}.numTatouage"]`);
+      const puceInput = document.querySelector(`[data-path="identification.animaux.${i}.numPuce"]`);
+      if (tatInput) tatInput.style.display = (tatRadioVal === 'oui') ? '' : 'none';
+      if (puceInput) puceInput.style.display = (puceRadioVal === 'oui') ? '' : 'none';
+    });
+
+    // Attache > 2 m
+    const attGroup = document.getElementById('attache2mGroup');
+    const attVal = getByPath(state,'constats.lieux.animalAttache');
+    if(attGroup) attGroup.style.display = (attVal==='oui') ? '' : 'none';
+
+    // Details visibles pour tutelle, handicap, témoin
+    const tutOui = document.querySelector('input[name="tutelle"][value="oui"]')?.checked;
+    const tutDetails = document.querySelector('[data-path="administratif.tutelleDetails"]');
+    if(tutDetails) tutDetails.style.display = tutOui ? '' : 'none';
+
+    const handOui = document.querySelector('input[name="handicap"][value="oui"]')?.checked;
+    const handDetails = document.querySelector('[data-path="administratif.handicap.details"]');
+    if(handDetails) handDetails.style.display = handOui ? '' : 'none';
+
+    const temOui = document.querySelector('input[name="temoin"][value="oui"]')?.checked;
+    const temCoord = document.querySelector('[data-path="administratif.temoin.coord"]');
+    if(temCoord) temCoord.style.display = temOui ? '' : 'none';
+
+    if(document.querySelector('#view-enquete.view.active')){
+      buildAnnexes();
+    }
+  }
+
+  // ====== Header actions ======
+  document.getElementById('btnExpand').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open = true));
+  document.getElementById('btnCollapse').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open = false));
+  document.getElementById('btnPrint').addEventListener('click', ()=> { buildAnnexes(); window.print(); });
+  document.getElementById('btnReset').addEventListener('click', ()=>{ if(confirm('Réinitialiser toutes les données ?')){
+      state = defaultState(); bindInputs(); renderAnimaux();
+      renderThumbs(idDocsList, [], 'removeIdDoc'); renderThumbs(photosList, [], 'removePhoto'); buildAnnexes();
+  }});
+
+  // ====== MEMO: logique menus 1/2 ======
+  (function(){
+    const menu1 = document.getElementById('menu1');
+    const menu2 = document.getElementById('menu2');
+    const sections = Array.from(document.querySelectorAll('#view-memo details'));
+    const help = document.getElementById('helpMessage');
+
+    const options = {
+      particulier: [
+        {id:"classique", label:"Propriétaire classique"},
+        {id:"famille", label:"Famille d’accueil / nourricier non déclaré"},
+        {id:"noe", label:"Collectionneur / syndrome de Noé"},
+        {id:"diogene", label:"Syndrome de Diogène"}
+      ],
+      professionnel: [
+        {id:"pro", label:"Professionnel déclaré"},
+        {id:"pro-non", label:"Professionnel non déclaré"}
+      ]
+    };
+
+    function showSection(id){
+      let anyShown = false;
+      sections.forEach(sec => {
+        const show = id && sec.id === id;
+        sec.style.display = show ? '' : 'none';
+        sec.open = !!show;
+        if (show) anyShown = true;
+      });
+      help.style.display = anyShown ? 'none' : '';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      sections.forEach(sec => { sec.style.display = 'none'; sec.open = false; });
+      help.style.display = '';
+    });
+
+    menu1?.addEventListener('change', () => {
+      const val = menu1.value;
+      menu2.innerHTML = '<option value="">-- Sélectionnez un sous-profil --</option>';
+      if (options[val]) {
+        options[val].forEach(opt => {
+          const o = document.createElement('option');
+          o.value = opt.id;
+          o.textContent = opt.label;
+          menu2.appendChild(o);
+        });
+        menu2.style.display = '';
+        sections.forEach(sec => { sec.style.display = 'none'; sec.open = false; });
+        help.style.display = '';
+      } else {
+        menu2.style.display = 'none';
+        if (val === "temoin") {
+          showSection("temoin");
+        } else if (val === "autorite") {
+          showSection("autorites");
+        } else {
+          sections.forEach(sec => { sec.style.display = 'none'; sec.open = false; });
+          help.style.display = '';
+        }
+      }
+    });
+
+    menu2?.addEventListener('change', () => showSection(menu2.value));
+  })();
+
+  // Init
+  bindInputs(); renderAnimaux(); buildAnnexes();
+</script>
+</body>
+</html>
